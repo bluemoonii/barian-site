@@ -2,235 +2,225 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Varian Archive</title>
+
 <link href="https://fonts.googleapis.com/css2?family=Noto+Serif+KR:wght@400;700&display=swap" rel="stylesheet">
+
 <style>
-    body {
-        margin: 0;
-        background: #000;
-        overflow: hidden;
-        font-family: 'Noto Serif KR', serif;
-        color: #fff;
-    }
+*{margin:0;padding:0;box-sizing:border-box;}
+body{
+    background:#000;
+    font-family:'Noto Serif KR', serif;
+    color:#fff;
+    overflow-x:hidden;
+}
 
-    /* 🌫 안개와 번개 효과 캔버스 */
-    canvas {
-        position: fixed;
-        top: 0; left: 0;
-        z-index: 1;
-        pointer-events: none;
-    }
+/* 배경 */
+.background{
+    position:fixed;
+    inset:0;
+    background:url('tarantia_castle.jpg') center/cover no-repeat;
+    filter:brightness(0.45) contrast(1.2);
+    z-index:-2;
+}
 
-    /* ⚔️ 오프닝 */
-    #intro {
-        position: fixed;
-        width: 100%; height: 100%;
-        background: black;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        z-index: 10;
-        transition: 1.5s;
-    }
+/* 그라데이션 */
+.vignette{
+    position:fixed;
+    inset:0;
+    background:linear-gradient(to bottom, rgba(0,0,0,0.7), rgba(0,0,0,0.2), rgba(0,0,0,0.85));
+    z-index:-1;
+}
 
-    #introText {
-        color: #fff;
-        font-size: 28px;
-        letter-spacing: 8px;
-        cursor: pointer;
-        opacity: 0.5;
-        transition: 0.5s;
-        animation: pulse 3s infinite;
-    }
-    @keyframes pulse { 0%, 100% { opacity: 0.3; } 50% { opacity: 0.8; } }
-    #introText:hover { opacity: 1; letter-spacing: 12px; }
+/* 캔버스 */
+canvas{
+    position:fixed;
+    inset:0;
+    pointer-events:none;
+    z-index:0;
+}
 
-    /* 🏰 메인 레이아웃 */
-    #main {
-        display: none;
-        height: 100vh;
-        position: relative;
-        z-index: 2;
-    }
+/* 인트로 */
+.intro{
+    height:100vh;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    font-size:clamp(18px,5vw,30px);
+    letter-spacing:6px;
+    opacity:0.6;
+    cursor:pointer;
+    animation:pulse 3s infinite;
+}
+@keyframes pulse{0%,100%{opacity:0.3;}50%{opacity:0.8;}}
 
-    .background {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: url('tarantia_castle.jpg') center/cover no-repeat;
-        filter: brightness(0.3) contrast(1.2);
-        z-index: -1;
-    }
+/* 섹션 */
+.section{
+    min-height:100vh;
+    padding:100px 24px;
+}
 
-    /* 제목: 멸망이 아닌 재건의 느낌 */
-    .header {
-        position: absolute;
-        top: 50px; width: 100%;
-        text-align: center;
-        letter-spacing: 10px;
-        text-shadow: 0 0 20px rgba(255,255,255,0.5);
-    }
+/* 제목 */
+.header{
+    text-align:center;
+    margin-bottom:80px;
+    letter-spacing:8px;
+    text-shadow:0 0 20px rgba(255,255,255,0.4);
+}
 
-    /* 이미지 컨테이너: 눌림 방지 */
-    .container {
-        height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-        gap: 60px;
-    }
+/* 카드 */
+.card{
+    width:min(92%,420px);
+    margin:80px auto;
+    border:1px solid rgba(255,255,255,0.2);
+    box-shadow:0 0 40px rgba(0,0,0,0.6);
+    overflow:hidden;
+    cursor:pointer;
 
-    .card {
-        position: relative;
-        width: 380px;
-        height: 550px; /* 고정 높이로 눌림 방지 */
-        overflow: hidden;
-        border: 1px solid rgba(255,255,255,0.2);
-        cursor: pointer;
-        transition: 0.5s ease-in-out;
-        box-shadow: 0 0 30px rgba(0,0,0,0.5);
-    }
+    opacity:0;
+    transform:translateY(60px);
+    transition:1.2s ease;
+}
+.card.show{
+    opacity:1;
+    transform:translateY(0);
+}
 
-    .card img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover; /* 사진이 영역에 꽉 차게 조절 (눌림 방지 핵심) */
-        transition: 1.5s;
-        filter: grayscale(0.5) brightness(0.8);
-    }
+.card img{
+    width:100%;
+    height:auto;
+    display:block;
+    filter:grayscale(0.5) brightness(0.85);
+    transition:1.2s;
+}
+.card:hover img{
+    transform:scale(1.08);
+    filter:grayscale(0) brightness(1);
+}
 
-    .card:hover {
-        transform: translateY(-20px);
-        border-color: #fff;
-        box-shadow: 0 0 50px rgba(255,255,255,0.2);
-    }
-
-    .card:hover img {
-        transform: scale(1.1);
-        filter: grayscale(0) brightness(1);
-    }
-
-    /* 📜 대사 오버레이 */
-    .overlay {
-        position: fixed;
-        top: 0; left: 0;
-        width: 100%; height: 100%;
-        background: rgba(0,0,0,0.95);
-        display: none;
-        justify-content: center;
-        align-items: center;
-        z-index: 20;
-        animation: fadeIn 0.8s;
-    }
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .overlay-content {
-        text-align: center;
-        max-width: 800px;
-        line-height: 2.5;
-        font-size: 22px;
-        letter-spacing: 1px;
-    }
-    .highlight { color: #aaa; font-style: italic; }
+/* 오버레이 */
+.overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(0,0,0,0.88);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:28px;
+    opacity:0;
+    pointer-events:none;
+    transition:0.6s;
+    z-index:10;
+}
+.overlay.show{
+    opacity:1;
+    pointer-events:auto;
+}
+.overlay-content{
+    max-width:800px;
+    line-height:2.4;
+    font-size:clamp(16px,4.5vw,24px);
+    letter-spacing:0.5px;
+}
+.highlight{color:#aaa;font-style:italic;}
 </style>
 </head>
 
 <body>
 
+<div class="background"></div>
+<div class="vignette"></div>
 <canvas id="effectCanvas"></canvas>
 
-<div id="intro">
-    <div id="introText" onclick="enterMain()">배신, 그리고 재건의 시작.</div>
+<div class="intro" onclick="scrollToContent()">
+배신, 그리고 재건의 시작.
 </div>
 
-<div id="main">
-    <div class="background"></div>
+<div class="section">
+
     <div class="header">
         <h1>TARANTIA: THE REBORN EMPIRE</h1>
     </div>
 
-    <div class="container">
-        <div class="card" onclick="openText('story1')">
-            <img src="varian1.png">
-        </div>
-        <div class="card" onclick="openText('story2')">
-            <img src="varian2.png">
-        </div>
+    <div class="card" onclick="openText('story1')">
+        <img src="varian1.png">
     </div>
+
+    <div class="card" onclick="openText('story2')">
+        <img src="varian2.png">
+    </div>
+
 </div>
 
+<!-- 오버레이 텍스트 -->
 <div id="story1" class="overlay" onclick="closeText()">
-    <div class="overlay-content">
-        <p>'어미를 삼키고 태어난 자'.</p>
-        <p>평생 사랑을 몰랐던 소년의 곁을 지켰던 유일한 온기.</p>
-        <p>함께 전장을 누비던 시간들 모두 기만이었음을 깨달았을 때,</p>
-        <p>그의 심장은 얼음보다 차갑게 굳어버렸다.</p>
-    </div>
+<div class="overlay-content">
+<p>'어미를 삼키고 태어난 자'.</p>
+<p>평생 사랑을 몰랐던 소년의 곁을 지켰던 유일한 온기.</p>
+<p>함께 전장을 누비던 시간들 모두 기만이었음을 깨달았을 때,</p>
+<p>그의 심장은 얼음보다 차갑게 굳어버렸다.</p>
+</div>
 </div>
 
 <div id="story2" class="overlay" onclick="closeText()">
-    <div class="overlay-content">
-        <p>파국을 딛고 다시 세운 타란티아, 그 옥좌 위에서 내린 첫 번째 심판.</p>
-        <p>검을 쥔 손은 떨렸으나, 그의 눈빛에는 더 이상 흔들림이 없다.</p>
-        <br>
-        <p style="font-size: 30px; letter-spacing: 5px;">"...다시는 내 눈 앞에 나타나지 마라."</p>
-        <br>
-        <p class="highlight">그것이 그가 줄 수 있는 마지막 자비였다.</p>
-    </div>
+<div class="overlay-content">
+<p>파국을 딛고 다시 세운 타란티아, 그 옥좌 위에서 내린 첫 번째 심판.</p>
+<p>검을 쥔 손은 떨렸으나, 그의 눈빛에는 더 이상 흔들림이 없다.</p>
+<br>
+<p style="font-size:clamp(18px,6vw,30px);letter-spacing:4px;">
+"...다시는 내 눈 앞에 나타나지 마라."
+</p>
+<br>
+<p class="highlight">그것이 그가 줄 수 있는 마지막 자비였다.</p>
+</div>
 </div>
 
 <script>
-function enterMain(){
-    document.getElementById('intro').style.opacity = '0';
-    setTimeout(() => {
-        document.getElementById('intro').style.display = 'none';
-        document.getElementById('main').style.display = 'block';
-    }, 1500);
-}
-function openText(id){ document.getElementById(id).style.display = 'flex'; }
-function closeText(){ document.querySelectorAll('.overlay').forEach(o=>o.style.display='none'); }
+// 스크롤 등장
+const observer=new IntersectionObserver(entries=>{
+ entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('show');});
+});
+document.querySelectorAll('.card').forEach(el=>observer.observe(el));
 
-/* 🌫 안개와 가끔 치는 번개 효과 */
-const canvas = document.getElementById('effectCanvas');
-const ctx = canvas.getContext('2d');
-canvas.width = window.innerWidth;
-canvas.height = window.innerHeight;
-
-let particles = [];
-for(let i=0; i<80; i++) {
-    particles.push({
-        x: Math.random() * canvas.width,
-        y: Math.random() * canvas.height,
-        size: Math.random() * 100 + 50,
-        opacity: Math.random() * 0.1,
-        vel: Math.random() * 0.5
-    });
+// 인트로 스크롤
+function scrollToContent(){
+ window.scrollTo({top:window.innerHeight,behavior:'smooth'});
 }
 
-function draw() {
-    ctx.clearRect(0,0,canvas.width, canvas.height);
-    
-    // 안개 그리기
-    ctx.fillStyle = "rgba(200, 200, 200, 0.05)";
-    for(let p of particles) {
-        ctx.beginPath();
-        ctx.arc(p.x, p.y, p.size, 0, Math.PI*2);
-        ctx.fill();
-        p.x += p.vel;
-        if(p.x > canvas.width + p.size) p.x = -p.size;
-    }
+// 오버레이
+function openText(id){document.getElementById(id).classList.add('show');}
+function closeText(){document.querySelectorAll('.overlay').forEach(o=>o.classList.remove('show'));}
 
-    // 가끔 번개 치는 효과 (화면 전체가 아주 잠깐 밝아짐)
-    if(Math.random() > 0.995) {
-        ctx.fillStyle = "rgba(255, 255, 255, 0.1)";
-        ctx.fillRect(0,0,canvas.width, canvas.height);
-    }
-    
-    requestAnimationFrame(draw);
+// 안개 & 번개
+const canvas=document.getElementById('effectCanvas');
+const ctx=canvas.getContext('2d');
+function resize(){canvas.width=innerWidth;canvas.height=innerHeight;}
+resize();window.onresize=resize;
+
+let particles=[];
+for(let i=0;i<80;i++){
+ particles.push({x:Math.random()*canvas.width,y:Math.random()*canvas.height,size:Math.random()*100+50,vel:Math.random()*0.5});
+}
+function draw(){
+ ctx.clearRect(0,0,canvas.width,canvas.height);
+ ctx.fillStyle="rgba(200,200,200,0.05)";
+ particles.forEach(p=>{
+  ctx.beginPath();
+  ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+  ctx.fill();
+  p.x+=p.vel;
+  if(p.x>canvas.width+p.size)p.x=-p.size;
+ });
+ if(Math.random()>0.995){
+  ctx.fillStyle="rgba(255,255,255,0.08)";
+  ctx.fillRect(0,0,canvas.width,canvas.height);
+ }
+ requestAnimationFrame(draw);
 }
 draw();
 </script>
 
 </body>
 </html>
-
